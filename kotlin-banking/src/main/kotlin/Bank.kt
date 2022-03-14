@@ -8,6 +8,7 @@ object Bank {
     var allAccounts = mutableListOf<BankAccount>()
     var allCards = mutableListOf<Card>()
     var allTransactions = mutableListOf<Transaction>()
+    var allCashpoints = mutableListOf<Cashpoint>()
 
     fun addClientPerson(surname_: String, firstName_: String, patronymic_: String?, passport: String, birthDate_: Calendar, sex_: SexEnum, phoneNumber_: String, address_: String) {
         val newPerson = ClientPerson(surname_, firstName_, patronymic_, passport, birthDate_, sex_, phoneNumber_, address_)
@@ -32,18 +33,47 @@ object Bank {
             if (newCard !in allCards) allCards.add(newCard)
         }
     }
-    fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
+    fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false, isCashTransaction: Boolean = false) {
         val currentDate = GregorianCalendar()
         if (isCardId) {
-            val newFromId = getCardById(fromId)?.id
-            val newToId = getCardById(toId)?.id
+            val newFromId = getCardById(fromId)?.accountId
+            val newToId = getCardById(toId)?.accountId
             if (newFromId == null || newToId == null) return
+            if (getAccountById(newFromId) == null || getAccountById(newToId) == null) return
             val newTransaction = Transaction(newFromId, newToId, amount, currentDate)
             if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
         }
         if (getAccountById(fromId) == null || getAccountById(toId) == null) return
         val newTransaction = Transaction(fromId, toId, amount, currentDate)
         if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
+    }
+    fun addCashpoint(isATM: Boolean) {
+        val newCashpoint = Cashpoint(isATM)
+        if (newCashpoint !in allCashpoints) allCashpoints.add(newCashpoint)
+    }
+    fun addCashTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
+        val currentDate = GregorianCalendar()
+        if (isCardId) {
+            val newFromId = getCardById(fromId)?.accountId
+            val newToId = getCardById(toId)?.accountId
+            if (newFromId != null) {
+                if (getAccountById(newFromId) != null) {
+                    val newTransaction = Transaction(newFromId, toId, amount, currentDate, true)
+                    if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
+                }
+                return
+            }
+            else if (newToId != null) {
+                if (getAccountById(newToId) != null) {
+                    val newTransaction = Transaction(fromId, newToId, amount, currentDate, true)
+                    if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
+                }
+            }
+        }
+        if ((getAccountById(fromId) != null && getCashpointById(toId) != null) || (getCashpointById(fromId) != null && getAccountById(toId) != null)) {
+            val newTransaction = Transaction(fromId, toId, amount, currentDate, true)
+            if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
+        }
     }
 
 
@@ -57,4 +87,5 @@ object Bank {
     fun getClientByTIN(TIN: String) = allLegalClients.find { client -> client.TIN == TIN }
     fun getAccountById(id: Int) = allAccounts.find { account -> account.id == id }
     fun getCardById(id: Int) = allCards.find { card -> card.id == id }
+    fun getCashpointById(id: Int) = allCashpoints.find {cashpoint ->  cashpoint.id == id}
 }

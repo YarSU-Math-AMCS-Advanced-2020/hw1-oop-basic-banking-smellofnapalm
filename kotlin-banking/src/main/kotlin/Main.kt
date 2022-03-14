@@ -8,8 +8,10 @@ fun main() {
     Bank.addBankAccount(Bank.allPersonalClients[0].id, Currency.RUB, BigDecimal(-10))
     Bank.addBankAccount(Bank.allLegalClients[0].id, Currency.RUB)
     Bank.addCard(Bank.allAccounts[0].id, Service.HoMir)
+    Bank.addCashpoint(true)
 
-    Bank.allAccounts[0].amount = BigDecimal(15)
+    Bank.addCashTransaction(Bank.allCashpoints[0].id, Bank.allAccounts[0].id, BigDecimal(100))
+    Bank.addCashTransaction(Bank.allAccounts[0].id, Bank.allCashpoints[0].id, BigDecimal(50))
     Bank.addTransaction(Bank.allAccounts[0].id, Bank.allAccounts[1].id, BigDecimal(10))
 
     println(Bank.allLegalClients[0].phoneNumber)
