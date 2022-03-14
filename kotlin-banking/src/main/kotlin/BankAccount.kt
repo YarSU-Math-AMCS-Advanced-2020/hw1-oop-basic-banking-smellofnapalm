@@ -2,15 +2,15 @@ import java.math.BigDecimal
 
 enum class Currency { USD, EUR, RUB }
 
-class BankAccount(private val ownerId: Int, private val currency_: Currency, limit_: BigDecimal? = null) {
+class BankAccount(private val ownerId: Int, val currency_: Currency, limit_: BigDecimal? = null) {
     val id = this.hashCode()
     var amount = BigDecimal(0)
     val currency get() = currency_.name
-    var limit: BigDecimal? = limit_
+    val isPersonalAccount = Bank.getPersonalClientById(ownerId) != null
+    override fun toString() = "Счет принадлежит ${if (isPersonalAccount) "человеку" else "кампании"} с id $ownerId, на нем лежит $amount $currency, его лимит $limit"
+    var limit: BigDecimal = limit_ ?: BigDecimal(Int.MAX_VALUE)
         set(value) {
-            if (value == null)
-                field = value
-            else if (value.toDouble() > 0)
+            if (value.toDouble() > 0)
                 field = value
         }
 }

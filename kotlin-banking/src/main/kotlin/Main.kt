@@ -14,11 +14,12 @@ fun main() {
     Bank.addCashTransaction(Bank.allAccounts[0].id, Bank.allCashpoints[0].id, BigDecimal(50))
     Bank.addTransaction(Bank.allAccounts[0].id, Bank.allAccounts[1].id, BigDecimal(10))
 
-    println(Bank.allLegalClients[0].phoneNumber)
-    println(Bank.allPersonalClients[0].birthDate)
-    println(Bank.allPersonalClients[0].sex)
-    println(Bank.allAccounts[0].limit)
-    println(Bank.allCards[0].openingDate)
-    println(Bank.allCards[0].endingDate)
     println("${Bank.allAccounts[0].amount}, ${Bank.allAccounts[1].amount}")
+
+    println(Bank.allPersonalClients[0])
+    println(Bank.allLegalClients[0])
+    println(Bank.allAccounts[0])
+    println(Bank.allCards[0])
+    println(Bank.allTransactions[0])
+    println(Bank.allCashpoints[0])
 }

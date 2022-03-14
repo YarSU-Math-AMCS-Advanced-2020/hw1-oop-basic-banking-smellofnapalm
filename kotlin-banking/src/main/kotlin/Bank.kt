@@ -23,7 +23,7 @@ object Bank {
             allLegalClients.find { it.id == ownerId } == null) return
 
         val newBankAccount = BankAccount(ownerId, currency_, limit_)
-        if ((newBankAccount.limit != null) && (newBankAccount.limit!!.toDouble() <= 0)) newBankAccount.limit = null
+        if (newBankAccount.limit.toDouble() <= 0) newBankAccount.limit = BigDecimal(Int.MAX_VALUE)
         if (newBankAccount !in allAccounts) allAccounts.add(newBankAccount)
     }
     fun addCard(accountId: Int, financialService: Service) {
@@ -88,4 +88,6 @@ object Bank {
     fun getAccountById(id: Int) = allAccounts.find { account -> account.id == id }
     fun getCardById(id: Int) = allCards.find { card -> card.id == id }
     fun getCashpointById(id: Int) = allCashpoints.find {cashpoint ->  cashpoint.id == id}
+    fun getPersonalClientById(id: Int) = allPersonalClients.find {client -> client.id == id}
+    fun getLegalClientById(id: Int) = allLegalClients.find {client -> client.id == id}
 }

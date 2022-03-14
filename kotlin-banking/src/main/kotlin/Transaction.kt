@@ -6,7 +6,9 @@ enum class Status { ToProcess, InProcess, Completed, Rejected }
 
 class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val date_: Calendar, val isCashTransaction: Boolean = false) {
     var status = Status.ToProcess
-    val date get() = SimpleDateFormat("d/M/Y").format(date_.time)
+    val date get() = SimpleDateFormat("h:m:s d/M/Y").format(date_.time)
+    var currency: Currency = Currency.RUB
+    override fun toString() = "Транзакция $idFrom --> $idTo в размере $amount $currency, ее статус $status, время проведения $date"
     init {
         status = Status.InProcess
         if (amount.toDouble() <= 0) {
@@ -19,8 +21,9 @@ class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val da
                 val to = Bank.getCashpointById(idTo)!!
                 val indexFrom = Bank.allAccounts.indexOf(from)
                 val indexTo = Bank.allCashpoints.indexOf(to)
+                currency = from.currency_
 
-                if (amount > (from.limit ?: BigDecimal(Int.MAX_VALUE))) {
+                if (amount > from.limit) {
                     status = Status.Rejected
                 }
                 else if (amount > from.amount) {
@@ -37,6 +40,7 @@ class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val da
                 val to = Bank.getAccountById(idTo)!!
                 val indexFrom = Bank.allCashpoints.indexOf(from)
                 val indexTo = Bank.allAccounts.indexOf(to)
+                currency = to.currency_
 
                 Bank.allAccounts[indexTo].amount += amount
                 status = Status.Completed
@@ -45,6 +49,7 @@ class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val da
                 status = Status.Rejected
             }
         }
+        // Перевод между двумя счетами
         else {
             var from: Int = -1
             var to: Int = -1
@@ -53,14 +58,12 @@ class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val da
                 if (Bank.allAccounts[i].id == idTo) to = i
             }
 
+            currency = Bank.allAccounts[from].currency_
             if (from == to || (from == -1 && to == -1)) {
                 status = Status.Rejected
             } else if (Bank.allAccounts[from].currency != Bank.allAccounts[to].currency) {
                 status = Status.Rejected
-            } else if (Bank.allAccounts[from].amount < amount || amount > (Bank.allAccounts[from].limit ?: BigDecimal(
-                    Int.MAX_VALUE
-                ))
-            ) {
+            } else if (Bank.allAccounts[from].amount < amount || amount > Bank.allAccounts[from].limit) {
                 status = Status.Rejected
             } else {
                 Bank.allAccounts[from].amount -= amount
