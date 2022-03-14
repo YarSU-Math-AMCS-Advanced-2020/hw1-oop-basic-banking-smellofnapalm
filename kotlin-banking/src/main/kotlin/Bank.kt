@@ -1,5 +1,5 @@
+
 import java.math.BigDecimal
-import java.text.SimpleDateFormat
 import java.util.*
 
 object Bank {
@@ -7,6 +7,7 @@ object Bank {
     var allLegalClients = mutableListOf<ClientLegal>()
     var allAccounts = mutableListOf<BankAccount>()
     var allCards = mutableListOf<Card>()
+    var allTransactions = mutableListOf<Transaction>()
 
     fun addClientPerson(surname_: String, firstName_: String, patronymic_: String?, passport: String, birthDate_: Calendar, sex_: SexEnum, phoneNumber_: String, address_: String) {
         val newPerson = ClientPerson(surname_, firstName_, patronymic_, passport, birthDate_, sex_, phoneNumber_, address_)
@@ -26,12 +27,23 @@ object Bank {
     }
     fun addCard(accountId: Int, financialService: Service) {
         val openingDate = GregorianCalendar()
-        println(SimpleDateFormat("d/M/Y").format(openingDate.time))
-
         if (getAccountById(accountId) != null) {
             val newCard = Card(accountId, financialService, openingDate)
             if (newCard !in allCards) allCards.add(newCard)
         }
+    }
+    fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
+        val currentDate = GregorianCalendar()
+        if (isCardId) {
+            val newFromId = getCardById(fromId)?.id
+            val newToId = getCardById(toId)?.id
+            if (newFromId == null || newToId == null) return
+            val newTransaction = Transaction(newFromId, newToId, amount, currentDate)
+            if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
+        }
+        if (getAccountById(fromId) == null || getAccountById(toId) == null) return
+        val newTransaction = Transaction(fromId, toId, amount, currentDate)
+        if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
     }
 
 
@@ -44,4 +56,5 @@ object Bank {
     fun getClientByPassport(passport: String) = allPersonalClients.find {client -> client.passport == passport}
     fun getClientByTIN(TIN: String) = allLegalClients.find { client -> client.TIN == TIN }
     fun getAccountById(id: Int) = allAccounts.find { account -> account.id == id }
+    fun getCardById(id: Int) = allCards.find { card -> card.id == id }
 }
