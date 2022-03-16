@@ -7,8 +7,8 @@ fun main() {
     Bank.addClientPerson("Чирков", "Михаил", "Анатольевич", "1234 567890", GregorianCalendar(2002, GregorianCalendar.JANUARY, 30), SexEnum.Man,"89101234567", "Ярославль")
     Bank.addClientLegal("Рога и Копыта", "12345678", GregorianCalendar(2020, GregorianCalendar.JANUARY, 1), "89101234567", "Ярославль")
 
-    Bank.addBankAccount(Bank.allPersonalClients[0].id, Currency.RUB, BigDecimal(-10))
-    Bank.addBankAccount(Bank.allLegalClients[0].id, Currency.RUB)
+    Bank.addBankAccount("Копилка", Bank.allPersonalClients[0].id, Currency.RUB, BigDecimal(-10))
+    Bank.addBankAccount("Брокерский", Bank.allLegalClients[0].id, Currency.RUB)
     Bank.addCard(Bank.allAccounts[0].id, Service.HoMir)
     Bank.addCashpoint(true)
 
@@ -26,5 +26,7 @@ fun main() {
     println(Bank.allCashpoints[0])
 
     Interactor.openAccount()
+    println(Bank.allAccounts[2])
+    Interactor.closeAccount()
     println(Bank.allAccounts[2])
 }

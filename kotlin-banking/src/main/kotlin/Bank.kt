@@ -18,17 +18,19 @@ object Bank {
         val newLegal = ClientLegal(name, TIN, establishing_date_, phoneNumber_, address_)
         if (newLegal !in allLegalClients) allLegalClients.add(newLegal)
     }
-    fun addBankAccount(ownerId: Int, currency_: Currency, limit_: BigDecimal? = null) {
+    fun addBankAccount(name: String, ownerId: Int, currency_: Currency, limit_: BigDecimal? = null) {
         if (allPersonalClients.find {it.id == ownerId} == null &&
             allLegalClients.find { it.id == ownerId } == null) return
 
-        val newBankAccount = BankAccount(ownerId, currency_, limit_)
+        val newBankAccount = BankAccount(name, ownerId, currency_, limit_)
         if (newBankAccount.limit.toDouble() <= 0) newBankAccount.limit = BigDecimal(Int.MAX_VALUE)
         if (newBankAccount !in allAccounts) allAccounts.add(newBankAccount)
     }
     fun addCard(accountId: Int, financialService: Service) {
         val openingDate = GregorianCalendar()
         if (getAccountById(accountId) != null) {
+            // К одном счету привязана лишь одна карта
+            if (Bank.allCards.find{it.accountId == accountId} != null) return
             val newCard = Card(accountId, financialService, openingDate)
             if (newCard !in allCards) allCards.add(newCard)
         }
@@ -90,4 +92,5 @@ object Bank {
     fun getCashpointById(id: Int) = allCashpoints.find {cashpoint ->  cashpoint.id == id}
     fun getPersonalClientById(id: Int) = allPersonalClients.find {client -> client.id == id}
     fun getLegalClientById(id: Int) = allLegalClients.find {client -> client.id == id}
+    fun getAccountByNameAndOwnerId(name: String, id: Int) = allAccounts.find { account -> account.name == name && account.ownerId == id }
 }
