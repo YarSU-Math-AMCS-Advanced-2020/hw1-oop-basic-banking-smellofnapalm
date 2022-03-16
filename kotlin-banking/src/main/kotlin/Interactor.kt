@@ -86,7 +86,8 @@ object Interactor {
                 val anotherAccount = Bank.allAccounts.find { it.name != name && it.ownerId == id && it.currency == account.currency}
                 if (anotherAccount != null) {
                     println("Сейчас переведем средства (${account.amount} ${account.currency}) на ваш счет ${anotherAccount.name}")
-                    val trans = Transaction(account.id, anotherAccount.id, account.amount, date)
+                    Bank.addTransaction(account.id, anotherAccount.id, account.amount)
+                    val trans = Bank.allTransactions.last()
                     if (trans.status == Status.Completed) {
                         println("Деньги были успешно переведены!")
                         Bank.allAccounts.removeIf { it.name == name && it.id == id }
@@ -99,7 +100,8 @@ object Interactor {
             println("Введите номер отделения или банкомата, в котором вам удобно забрать наличные (или 0, если хотите забрать в главном отделении банка)")
             var cash = readln().toInt()
             if (Bank.getCashpointById(cash) == null) cash = Bank.allCashpoints[0].id
-            val trans = Transaction(account.id, cash, account.amount, date, true)
+            Bank.addCashTransaction(account.id, cash, account.amount)
+            val trans = Bank.allTransactions.last()
             if (trans.status == Status.Completed) {
                 println("Деньги (${trans.amount} ${account.currency}) вам выданы, сейчас закроем счет!")
                 Bank.allAccounts.removeIf { it.name == name && it.ownerId == id }
@@ -108,6 +110,88 @@ object Interactor {
         }
         catch (e: Exception) {
             println("Не получилось закрыть счет")
+        }
+    }
+    fun setLimit() {
+        try {
+            println("Вы хотите поставить лимит на карту или счет? (C/A)")
+            val isCard = readln().lowercase() == "c"
+            println("Введите новый лимит (положительное вещественное число)")
+            val limit = readln().toBigDecimal()
+            println("Введите название вашего счета")
+            val name = readln()
+            println("Введите ваш ИНН или паспорт")
+            val res = readln()
+            val id = Bank.getClientByTIN(res)?.id ?: Bank.getClientByPassport(res)!!.id
+            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            val i = Bank.allAccounts.indexOf(account)
+            if (!isCard) {
+                Bank.allAccounts[i].limit = limit
+                println("Теперь лимит по счету равен ${Bank.allAccounts[i].limit} ${account.currency}")
+            } else {
+                val card = Bank.getCardByAccountId(account.id)!!
+                val j = Bank.allCards.indexOf(card)
+                Bank.allCards[j].limit = limit
+                println("Теперь лимит по карте равен ${Bank.allCards[j].limit} ${account.currency}")
+            }
+        }
+        catch (e: Exception) {
+            println("Не получилось обновить лимит")
+        }
+    }
+    fun openCard() {
+        try {
+            println("Введите название счета, для которого вы хотите открыть карту")
+            val name = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            if (Bank.getCardByAccountId(account.id) != null) {
+                println("К вашему счету уже привязана карта! Сначала закройте старую")
+                return
+            }
+            println("Введите, какую платежную систему будет использовать ваша карта (HoMir, MasterBart, Lisa)")
+            val financialService = Service.valueOf(readln())
+            Bank.addCard(account.id, financialService)
+            println("К вашему счету успешно была привязана карта\n${Bank.allCards.last()}")
+        }
+        catch(e: Exception) {
+            println("Не получилось открыть карту")
+        }
+    }
+    fun closeCard() {
+        try {
+            println("Введите название счета, для которого вы хотите закрыть карту")
+            val name = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            if (Bank.deleteCard(name, id)) println("Карта успешно удалена!")
+        }
+        catch (e: Exception) {
+            println("Не удалось закрыть карту")
+        }
+    }
+    fun rebindCard() {
+        try {
+            println("Введите название счета, для которого вы хотите закрыть карту")
+            val nameFrom = readln()
+            println("Введите название счета, для которого вы хотите открыть карту")
+            val nameTo = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            val idFrom = Bank.getAccountByNameAndOwnerId(nameFrom, id)!!.id
+            val idTo = Bank.getAccountByNameAndOwnerId(nameTo, id)!!.id
+            val card = Bank.getCardByAccountId(idFrom)!!
+            if (!Bank.deleteCard(nameFrom, id)) throw Exception()
+            println("Карта успешно отвязана от счета $idFrom")
+            Bank.addCard(idTo, card.financialService)
+            println("Карта успешно привязана к счету $idTo")
+        }
+        catch (e: Exception) {
+            println("Не удалось перепривязать карту")
         }
     }
 }

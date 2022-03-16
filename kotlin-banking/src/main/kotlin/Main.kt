@@ -25,8 +25,15 @@ fun main() {
     println(Bank.allTransactions[0])
     println(Bank.allCashpoints[0])
 
-    Interactor.openAccount()
+    /* Interactor.openAccount()
     println(Bank.allAccounts[2])
     Interactor.closeAccount()
-    println(Bank.allAccounts[2])
+    println(Bank.allAccounts[2]) */
+
+    /* Interactor.setLimit()
+    println(Bank.allAccounts[0]) */
+
+    Interactor.openAccount()
+    Interactor.openCard()
+    Interactor.rebindCard()
 }

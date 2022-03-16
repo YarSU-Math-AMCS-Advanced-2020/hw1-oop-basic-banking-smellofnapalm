@@ -35,7 +35,7 @@ object Bank {
             if (newCard !in allCards) allCards.add(newCard)
         }
     }
-    fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false, isCashTransaction: Boolean = false) {
+    fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
         val currentDate = GregorianCalendar()
         if (isCardId) {
             val newFromId = getCardById(fromId)?.accountId
@@ -78,13 +78,6 @@ object Bank {
         }
     }
 
-
-    fun deleteClientById(id: Int) {
-        allPersonalClients.removeIf {client -> client.id == id}
-        allLegalClients.removeIf {client -> client.id == id}
-        // TODO: Remove all connected bank accounts and cards
-    }
-
     fun getClientByPassport(passport: String) = allPersonalClients.find {client -> client.passport == passport}
     fun getClientByTIN(TIN: String) = allLegalClients.find { client -> client.TIN == TIN }
     fun getAccountById(id: Int) = allAccounts.find { account -> account.id == id }
@@ -93,4 +86,12 @@ object Bank {
     fun getPersonalClientById(id: Int) = allPersonalClients.find {client -> client.id == id}
     fun getLegalClientById(id: Int) = allLegalClients.find {client -> client.id == id}
     fun getAccountByNameAndOwnerId(name: String, id: Int) = allAccounts.find { account -> account.name == name && account.ownerId == id }
+    fun getCardByAccountId(id: Int) = allCards.find {card -> card.accountId == id}
+
+    fun deleteCard(accountName: String, ownerId: Int): Boolean {
+        val accountId = getAccountByNameAndOwnerId(accountName, ownerId)?.id ?: return false
+        if (allCards.find {it.accountId == accountId} == null) return false
+        allCards.removeIf { it.accountId == accountId }
+        return true
+    }
 }
