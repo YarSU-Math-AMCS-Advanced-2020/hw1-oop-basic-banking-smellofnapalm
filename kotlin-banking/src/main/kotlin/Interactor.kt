@@ -1,3 +1,4 @@
+
 import java.math.BigDecimal
 import java.util.*
 
@@ -90,6 +91,7 @@ object Interactor {
                     val trans = Bank.allTransactions.last()
                     if (trans.status == Status.Completed) {
                         println("Деньги были успешно переведены!")
+                        Bank.deleteCard(account.name, id) // Удаляем привязанную к счету карту
                         Bank.allAccounts.removeIf { it.name == name && it.id == id }
                         println("Ваш счет был успешно удален! Удачного вам дня!")
                         return
@@ -104,6 +106,7 @@ object Interactor {
             val trans = Bank.allTransactions.last()
             if (trans.status == Status.Completed) {
                 println("Деньги (${trans.amount} ${account.currency}) вам выданы, сейчас закроем счет!")
+                Bank.deleteCard(account.name, id) // Удаляем привязанную к счету карту
                 Bank.allAccounts.removeIf { it.name == name && it.ownerId == id }
                 println("Ваш счет был успешно удален! Удачного вам дня!")
             }
@@ -192,6 +195,81 @@ object Interactor {
         }
         catch (e: Exception) {
             println("Не удалось перепривязать карту")
+        }
+    }
+    fun makeTransaction() {
+        try {
+            println("Введите название счета, с которого вы хотите перевести деньги")
+            val name = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            println("Введите номер телефона человека, которому хотите перевести деньги (начиная с 8 без скобок и дефисов)")
+            val number = readln()
+            val accountTo = Bank.allAccounts.find {
+                val a = (it.currency == account.currency)
+                val b = (if (it.isPersonalAccount) Bank.getPersonalClientById(it.ownerId)!! else
+                Bank.getLegalClientById(it.ownerId)!!).phoneNumber == number
+                val c = (it.id != account.id)
+                a && b && c
+            }!!
+            println("Введите, сколько ${account.currency} хотите перевести (ваш лимит ${account.limit}, а на счету лежит ${account.amount})")
+            val amount = readln().toBigDecimal()
+            Bank.addTransaction(account.id, accountTo.id, amount)
+            if (Bank.allTransactions.last().status == Status.Completed)
+                println("Транзакция прошла успешно, $amount ${account.currency} переведены\nТеперь на вашем счету ${account.amount} ${account.currency}")
+            else
+                println("Транзакция не прошла, извините :(")
+        }
+        catch(e: Exception) {
+            println("Не удалось создать и провести транзакцию")
+        }
+    }
+    fun cashWithdrawal() {
+        try {
+            println("Введите название счета, с которого хотите снять деньги")
+            val name = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            println("Введите в каком банкомате или отделении банка хотите снять деньги (если не знаете его номер, то введит 0, мы выдадим деньги в главном отделении)")
+            var cashierId = readln().toInt()
+            if (Bank.getCashpointById(cashierId) == null) cashierId = Bank.allCashpoints[0].id
+            println("Введите сколько денег хотите вывести (у вас лимит ${account.limit}, а всего ${account.amount} ${account.currency})")
+            val amount = readln().toBigDecimal()
+            Bank.addCashTransaction(account.id, cashierId, amount)
+            if (Bank.allTransactions.last().status == Status.Completed)
+                println("Выдача $amount ${account.currency} прошла успешно! Теперь у вас на счете ${account.amount} ${account.currency}")
+            else
+                println("Не получилось выдать наличные, извините :(")
+        }
+        catch(e: Exception) {
+            println("Не получилось организовать выдачу наличных")
+        }
+    }
+    fun cashIn() {
+        try {
+            println("Введите название счета, на который хотите положить деньги")
+            val name = readln()
+            println("Введите ваш паспорт или ИНН")
+            val s = readln()
+            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
+            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            println("Введите в каком банкомате или отделении банка хотите положить деньги (если не знаете его номер, то введит 0, мы направим вас в главное отделение)")
+            var cashierId = readln().toInt()
+            if (Bank.getCashpointById(cashierId) == null) cashierId = Bank.allCashpoints[0].id
+            println("Введите сколько денег хотите положить на ваш счет (сейчас на нем ${account.amount} ${account.currency})")
+            val amount = readln().toBigDecimal()
+            Bank.addCashTransaction(cashierId, account.id, amount)
+            if (Bank.allTransactions.last().status == Status.Completed)
+                println("Вы успешно положили себе на счет $amount ${account.currency}! Теперь у вас на счете ${account.amount} ${account.currency}")
+            else
+                println("Не получилось положить наличные, извините :(")
+        }
+        catch(e: Exception) {
+            println("Не получилось организовать прием наличных")
         }
     }
 }

@@ -33,7 +33,11 @@ fun main() {
     /* Interactor.setLimit()
     println(Bank.allAccounts[0]) */
 
-    Interactor.openAccount()
+    /* Interactor.openAccount()
     Interactor.openCard()
-    Interactor.rebindCard()
+    Interactor.rebindCard() */
+
+    /* Interactor.makeTransaction() */
+    /* Interactor.cashWithdrawal() */
+    Interactor.cashIn()
 }

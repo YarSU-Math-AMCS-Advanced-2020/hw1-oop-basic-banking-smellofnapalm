@@ -1,4 +1,3 @@
-open class Client (private val phoneNumber_: String, val address_: String) {
+open class Client (val phoneNumber: String, val address: String) {
     val id = this.hashCode()
-    val phoneNumber get() = "+7(***)***-**-${phoneNumber_.takeLast(4)}"
 }
