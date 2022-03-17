@@ -1,5 +1,7 @@
+import inside.Interactor
+
 object Menu {
-    val listOfOptions = listOf<String>(
+    private val listOfOptions = listOf<String>(
         "Зарегистрировать человека в банке",
         "Зарегистрировать компанию в банке",
         "Открыть счет",
@@ -16,7 +18,7 @@ object Menu {
         "Вывести список всех карт",
         "Вывести список всех банкоматов",
         "Вывести список всех транзакций")
-    fun chooser(index: Int) {
+    private fun chooser(index: Int) {
         if (index < 1 || index > listOfOptions.size) return
         when(index) {
             1 -> Interactor.registerPersonalClient()
@@ -37,7 +39,7 @@ object Menu {
             16 -> Interactor.printAllTransactions()
         }
     }
-    fun printMenu() {
+    private fun printMenu() {
         println("0. Выйти из банка")
         for (i in listOfOptions.indices) {
             println("${i+1}. ${listOfOptions[i]}")

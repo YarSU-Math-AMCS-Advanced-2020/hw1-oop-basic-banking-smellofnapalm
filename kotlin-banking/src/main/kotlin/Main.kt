@@ -1,40 +1,39 @@
-import java.util.*
-
 fun main() {
     Menu.mainCycle()
-    /* Bank.addClientPerson("Чирков", "Михаил", "Анатольевич", "1234 567890", GregorianCalendar(2002, GregorianCalendar.JANUARY, 30), SexEnum.Man,"89101234567", "Ярославль")
-    Bank.addClientLegal("Рога и Копыта", "12345678", GregorianCalendar(2020, GregorianCalendar.JANUARY, 1), "89101234567", "Ярославль")
 
-    Bank.addBankAccount("Копилка", Bank.allPersonalClients[0].id, Currency.RUB, BigDecimal(-10))
-    Bank.addBankAccount("Брокерский", Bank.allLegalClients[0].id, Currency.RUB)
-    Bank.addCard(Bank.allAccounts[0].id, Service.HoMir)
-    Bank.addCashpoint(true)
+    /* inside.Bank.addClientPerson("Чирков", "Михаил", "Анатольевич", "1234 567890", GregorianCalendar(2002, GregorianCalendar.JANUARY, 30), SexEnum.Man,"89101234567", "Ярославль")
+    inside.Bank.addClientLegal("Рога и Копыта", "12345678", GregorianCalendar(2020, GregorianCalendar.JANUARY, 1), "89101234567", "Ярославль")
 
-    Bank.addCashTransaction(Bank.allCashpoints[0].id, Bank.allAccounts[0].id, BigDecimal(100))
-    Bank.addCashTransaction(Bank.allAccounts[0].id, Bank.allCashpoints[0].id, BigDecimal(50))
-    Bank.addTransaction(Bank.allAccounts[0].id, Bank.allAccounts[1].id, BigDecimal(10))
+    inside.Bank.addBankAccount("Копилка", inside.Bank.allPersonalClients[0].id, Currency.RUB, BigDecimal(-10))
+    inside.Bank.addBankAccount("Брокерский", inside.Bank.allLegalClients[0].id, Currency.RUB)
+    inside.Bank.addCard(inside.Bank.allAccounts[0].id, Service.HoMir)
+    inside.Bank.addCashpoint(true)
 
-    println("${Bank.allAccounts[0].amount}, ${Bank.allAccounts[1].amount}")
+    inside.Bank.addCashTransaction(inside.Bank.allCashpoints[0].id, inside.Bank.allAccounts[0].id, BigDecimal(100))
+    inside.Bank.addCashTransaction(inside.Bank.allAccounts[0].id, inside.Bank.allCashpoints[0].id, BigDecimal(50))
+    inside.Bank.addTransaction(inside.Bank.allAccounts[0].id, inside.Bank.allAccounts[1].id, BigDecimal(10))
 
-    println(Bank.allPersonalClients[0])
-    println(Bank.allLegalClients[0])
-    println(Bank.allAccounts[0])
-    println(Bank.allCards[0])
-    println(Bank.allTransactions[0])
-    println(Bank.allCashpoints[0]) */
+    println("${inside.Bank.allAccounts[0].amount}, ${inside.Bank.allAccounts[1].amount}")
 
-    /* Interactor.openAccount()
-    println(Bank.allAccounts[2])
-    Interactor.closeAccount()
-    println(Bank.allAccounts[2]) */
+    println(inside.Bank.allPersonalClients[0])
+    println(inside.Bank.allLegalClients[0])
+    println(inside.Bank.allAccounts[0])
+    println(inside.Bank.allCards[0])
+    println(inside.Bank.allTransactions[0])
+    println(inside.Bank.allCashpoints[0]) */
 
-    /* Interactor.setLimit()
-    println(Bank.allAccounts[0]) */
+    /* inside.Interactor.openAccount()
+    println(inside.Bank.allAccounts[2])
+    inside.Interactor.closeAccount()
+    println(inside.Bank.allAccounts[2]) */
 
-    /* Interactor.openAccount()
-    Interactor.openCard()
-    Interactor.rebindCard() */
+    /* inside.Interactor.setLimit()
+    println(inside.Bank.allAccounts[0]) */
 
-    /* Interactor.makeTransaction() */
-    /* Interactor.cashWithdrawal() */
+    /* inside.Interactor.openAccount()
+    inside.Interactor.openCard()
+    inside.Interactor.rebindCard() */
+
+    /* inside.Interactor.makeTransaction() */
+    /* inside.Interactor.cashWithdrawal() */
 }

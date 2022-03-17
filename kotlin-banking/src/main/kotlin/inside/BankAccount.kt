@@ -1,3 +1,4 @@
+import inside.Bank
 import java.math.BigDecimal
 
 enum class Currency { USD, EUR, RUB }

@@ -1,4 +1,11 @@
-
+package inside
+import BankAccount
+import Card
+import ClientPerson
+import Currency
+import Service
+import SexEnum
+import Transaction
 import java.math.BigDecimal
 import java.util.*
 
@@ -30,7 +37,7 @@ object Bank {
         val openingDate = GregorianCalendar()
         if (getAccountById(accountId) != null) {
             // К одном счету привязана лишь одна карта
-            if (Bank.allCards.find{it.accountId == accountId} != null) return
+            if (allCards.find{it.accountId == accountId} != null) return
             val newCard = Card(accountId, financialService, openingDate)
             if (newCard !in allCards) allCards.add(newCard)
         }
@@ -78,15 +85,15 @@ object Bank {
         }
     }
 
-    fun getClientByPassport(passport: String) = allPersonalClients.find {client -> client.passport == passport}
+    fun getClientByPassport(passport: String) = allPersonalClients.find { client -> client.passport == passport}
     fun getClientByTIN(TIN: String) = allLegalClients.find { client -> client.TIN == TIN }
     fun getAccountById(id: Int) = allAccounts.find { account -> account.id == id }
     fun getCardById(id: Int) = allCards.find { card -> card.id == id }
-    fun getCashpointById(id: Int) = allCashpoints.find {cashpoint ->  cashpoint.id == id}
-    fun getPersonalClientById(id: Int) = allPersonalClients.find {client -> client.id == id}
-    fun getLegalClientById(id: Int) = allLegalClients.find {client -> client.id == id}
+    fun getCashpointById(id: Int) = allCashpoints.find { cashpoint ->  cashpoint.id == id}
+    fun getPersonalClientById(id: Int) = allPersonalClients.find { client -> client.id == id}
+    fun getLegalClientById(id: Int) = allLegalClients.find { client -> client.id == id}
     fun getAccountByNameAndOwnerId(name: String, id: Int) = allAccounts.find { account -> account.name == name && account.ownerId == id }
-    fun getCardByAccountId(id: Int) = allCards.find {card -> card.accountId == id}
+    fun getCardByAccountId(id: Int) = allCards.find { card -> card.accountId == id}
 
     fun deleteCard(accountName: String, ownerId: Int): Boolean {
         val accountId = getAccountByNameAndOwnerId(accountName, ownerId)?.id ?: return false
