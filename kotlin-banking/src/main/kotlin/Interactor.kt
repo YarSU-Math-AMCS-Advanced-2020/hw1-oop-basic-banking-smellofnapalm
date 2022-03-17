@@ -6,18 +6,18 @@ object Interactor {
     fun registerPersonalClient() {
         try {
             println("Введите ваше ФИО:")
-            val (surname, name, patronymic) = scanner.nextLine().split(" ", limit = 3)
+            val (surname, name, patronymic) = readln().split(" ", limit = 3)
             println("Введите ваш паспорт:")
-            val passport = scanner.nextLine()
+            val passport = readln()
             println("Введите дату рождения в формате ДД.ММ.ГГГГ:")
-            val date = scanner.nextLine().split(".", limit = 3)
+            val date = readln().split(".", limit = 3)
             val calendar = GregorianCalendar(date[2].toInt(), date[1].toInt() - 1, date[0].toInt())
             println("Введите ваш пол: Man, Woman или NonBinary")
-            val sex = SexEnum.valueOf(scanner.nextLine())
-            println("Введите ваш номер телефона:")
-            val number = scanner.nextLine()
+            val sex = SexEnum.valueOf(readln())
+            println("Введите ваш номер телефона (начиная с 8, без скобок и дефисов):")
+            val number = readln()
             println("Введите адрес проживания:")
-            val address = scanner.nextLine()
+            val address = readln()
             Bank.addClientPerson(surname, name, patronymic, passport, calendar, sex, number, address)
         }
         catch (e: Exception) {
@@ -27,16 +27,16 @@ object Interactor {
     fun registerLegalClient() {
         try {
             println("Введите названия вашей компании:")
-            val name = scanner.nextLine()
+            val name = readln()
             println("Введите ваш ИНН:")
-            val tin = scanner.nextLine()
+            val tin = readln()
             println("Введите дату основания в формате ДД.ММ.ГГГГ:")
-            val date = scanner.nextLine().split(".", limit = 3)
+            val date = readln().split(".", limit = 3)
             val calendar = GregorianCalendar(date[2].toInt(), date[1].toInt() - 1, date[0].toInt())
             println("Введите номер телефона компании:")
-            val number = scanner.nextLine()
+            val number = readln()
             println("Введите юридический адрес:")
-            val address = scanner.nextLine()
+            val address = readln()
             Bank.addClientLegal(name, tin, calendar, number, address)
         }
         catch (e: Exception) {
@@ -64,7 +64,7 @@ object Interactor {
             var limit: BigDecimal? = null
             if (readln().lowercase() == "y") {
                 println("Введите лимит")
-                limit = scanner.nextLine().toBigDecimal()
+                limit = readln().toBigDecimal()
             }
             Bank.addBankAccount(name, id, currency, limit)
         }

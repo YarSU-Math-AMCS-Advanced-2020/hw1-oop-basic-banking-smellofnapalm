@@ -1,7 +1,5 @@
 import java.util.*
 
-val scanner = Scanner(System.`in`)
-
 fun main() {
     Menu.mainCycle()
     /* Bank.addClientPerson("Чирков", "Михаил", "Анатольевич", "1234 567890", GregorianCalendar(2002, GregorianCalendar.JANUARY, 30), SexEnum.Man,"89101234567", "Ярославль")

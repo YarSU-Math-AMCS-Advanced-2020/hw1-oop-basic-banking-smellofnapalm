@@ -8,7 +8,7 @@ object Bank {
     var allAccounts = mutableListOf<BankAccount>()
     var allCards = mutableListOf<Card>()
     var allTransactions = mutableListOf<Transaction>()
-    var allCashpoints = mutableListOf<Cashpoint>()
+    var allCashpoints = mutableListOf<Cashpoint>(Cashpoint(false))
 
     fun addClientPerson(surname: String, firstName: String, patronymic: String?, passport: String, birthDate_: Calendar, sex_: SexEnum, phoneNumber: String, address: String) {
         val newPerson = ClientPerson(surname, firstName, patronymic, passport, birthDate_, sex_, phoneNumber, address)
