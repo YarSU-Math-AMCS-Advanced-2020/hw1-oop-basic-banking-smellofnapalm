@@ -10,13 +10,13 @@ object Bank {
     var allTransactions = mutableListOf<Transaction>()
     var allCashpoints = mutableListOf<Cashpoint>()
 
-    fun addClientPerson(surname_: String, firstName_: String, patronymic_: String?, passport: String, birthDate_: Calendar, sex_: SexEnum, phoneNumber_: String, address_: String) {
-        val newPerson = ClientPerson(surname_, firstName_, patronymic_, passport, birthDate_, sex_, phoneNumber_, address_)
-        if (newPerson !in allPersonalClients) allPersonalClients.add(newPerson)
+    fun addClientPerson(surname: String, firstName: String, patronymic: String?, passport: String, birthDate_: Calendar, sex_: SexEnum, phoneNumber: String, address: String) {
+        val newPerson = ClientPerson(surname, firstName, patronymic, passport, birthDate_, sex_, phoneNumber, address)
+        if (allPersonalClients.find {(it.name == newPerson.name && it.phoneNumber == newPerson.phoneNumber) || (it.passport == passport)} == null) allPersonalClients.add(newPerson)
     }
-    fun addClientLegal(name: String, TIN: String, establishing_date_: Calendar, phoneNumber_: String, address_: String) {
-        val newLegal = ClientLegal(name, TIN, establishing_date_, phoneNumber_, address_)
-        if (newLegal !in allLegalClients) allLegalClients.add(newLegal)
+    fun addClientLegal(name: String, TIN: String, establishing_date_: Calendar, phoneNumber: String, address: String) {
+        val newLegal = ClientLegal(name, TIN, establishing_date_, phoneNumber, address)
+        if (allLegalClients.find {(it.name == newLegal.name && it.phoneNumber == newLegal.phoneNumber) || (it.TIN == TIN)} == null) allLegalClients.add(newLegal)
     }
     fun addBankAccount(name: String, ownerId: Int, currency_: Currency, limit_: BigDecimal? = null) {
         if (allPersonalClients.find {it.id == ownerId} == null &&
@@ -24,7 +24,7 @@ object Bank {
 
         val newBankAccount = BankAccount(name, ownerId, currency_, limit_)
         if (newBankAccount.limit.toDouble() <= 0) newBankAccount.limit = BigDecimal(Int.MAX_VALUE)
-        if (newBankAccount !in allAccounts) allAccounts.add(newBankAccount)
+        if (allAccounts.find {it.name == name && it.ownerId == ownerId} == null) allAccounts.add(newBankAccount)
     }
     fun addCard(accountId: Int, financialService: Service) {
         val openingDate = GregorianCalendar()

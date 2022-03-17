@@ -272,4 +272,32 @@ object Interactor {
             println("Не получилось организовать прием наличных")
         }
     }
+    fun printAllClients() {
+        println("Список всех клиентов:")
+        for (client in Bank.allPersonalClients)
+            println("${client.id}: $client")
+        println("------------")
+        for (client in Bank.allLegalClients)
+            println("${client.id}: $client")
+    }
+    fun printAllAccount() {
+        println("Список всех счетов:")
+        for (account in Bank.allAccounts)
+            println("${account.id}: $account")
+    }
+    fun printAllCards() {
+        println("Список всех карт:")
+        for (card in Bank.allCards)
+            println("${card.id}: $card")
+    }
+    fun printAllCashpoints() {
+        println("Список всех банкоматов и отделений")
+        for (cashpoint in Bank.allCashpoints)
+            println(cashpoint)
+    }
+    fun printAllTransactions() {
+        println("Список всех транзакций")
+        for (trans in Bank.allTransactions)
+            println(trans)
+    }
 }

@@ -7,5 +7,5 @@ class ClientLegal (val name: String,
                    phoneNumber: String,
                    address: String) : Client(phoneNumber, address) {
     val establishingDate: String get() = SimpleDateFormat("d/M/Y").format(establishing_date_.time)
-    override fun toString() = "Компания называется $name, ее TIN $TIN, дата основания $establishingDate, телефонный номер $phoneNumber, адрес $address"
+    override fun toString() = "Компания называется $name, ее дата основания $establishingDate, телефонный номер $phoneNumber и адрес $address"
 }
