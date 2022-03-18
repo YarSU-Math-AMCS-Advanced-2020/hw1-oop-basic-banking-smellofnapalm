@@ -1,7 +1,7 @@
 import inside.Interactor
 
 object Menu {
-    private val listOfOptions = listOf<String>(
+    private val listOfOptions = listOf(
         "Зарегистрировать человека в банке",
         "Зарегистрировать компанию в банке",
         "Открыть счет",

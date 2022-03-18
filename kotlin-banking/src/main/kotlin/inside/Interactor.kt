@@ -19,7 +19,7 @@ object Interactor {
             val number = readln()
             println("Введите адрес проживания:")
             val address = readln()
-            Bank.addClientPerson(surname, name, patronymic, passport, calendar, sex, number, address)
+            Bank.Adder.addClientPerson(surname, name, patronymic, passport, calendar, sex, number, address)
         }
         catch (e: Exception) {
             println("Не удалось зарегистрировать нового пользователя")
@@ -38,7 +38,7 @@ object Interactor {
             val number = readln()
             println("Введите юридический адрес:")
             val address = readln()
-            Bank.addClientLegal(name, tin, calendar, number, address)
+            Bank.Adder.addClientLegal(name, tin, calendar, number, address)
         }
         catch (e: Exception) {
             println("Не удалось зарегистрировать компанию")
@@ -53,11 +53,11 @@ object Interactor {
             var id = 0
             if (ans.lowercase() == "c") {
                 println("Введите ваш ИНН")
-                id = Bank.getClientByTIN(readln())!!.id
+                id = Bank.Getter.getClientByTIN(readln())!!.id
             }
             else if (ans.lowercase() == "p") {
                 println("Введите ваш паспорт")
-                id = Bank.getClientByPassport(readln())!!.id
+                id = Bank.Getter.getClientByPassport(readln())!!.id
             }
             println("Введите валюту счета (USD, EUR, RUB)")
             val currency = Currency.valueOf(readln())
@@ -67,7 +67,7 @@ object Interactor {
                 println("Введите лимит")
                 limit = readln().toBigDecimal()
             }
-            Bank.addBankAccount(name, id, currency, limit)
+            Bank.Adder.addBankAccount(name, id, currency, limit)
         }
         catch (e: Exception) {
             println("Не удалось открыть новый счет")
@@ -77,23 +77,19 @@ object Interactor {
         try {
             println("Введите название счета, которой вы хотите закрыть")
             val name = readln()
-            println("Подтвердите, что вы являетесь владельцем - введите ваш паспорт или ИНН")
-            var ans = readln()
-            val id = Bank.getClientByTIN(ans)?.id ?: Bank.getClientByPassport(ans)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
-            val date = GregorianCalendar()
+            val account = getAccountByNameAndOwner(name)
             println("Вы хотите перевести деньги на другой ваш счет? (Y/N)")
-            ans = readln()
+            val ans = readln()
             if (ans.lowercase() == "y") {
-                val anotherAccount = Bank.allAccounts.find { it.name != name && it.ownerId == id && it.currency == account.currency}
+                val anotherAccount = Bank.Storage.allAccounts.find { it.name != name && it.ownerId == account.id && it.currency == account.currency}
                 if (anotherAccount != null) {
                     println("Сейчас переведем средства (${account.amount} ${account.currency}) на ваш счет ${anotherAccount.name}")
-                    Bank.addTransaction(account.id, anotherAccount.id, account.amount)
-                    val trans = Bank.allTransactions.last()
+                    Bank.Adder.addTransaction(account.id, anotherAccount.id, account.amount)
+                    val trans = Bank.Storage.allTransactions.last()
                     if (trans.status == Status.Completed) {
                         println("Деньги были успешно переведены!")
-                        Bank.deleteCard(account.name, id) // Удаляем привязанную к счету карту
-                        Bank.allAccounts.removeIf { it.name == name && it.id == id }
+                        Bank.Deleter.deleteCard(account.name, account.id) // Удаляем привязанную к счету карту
+                        Bank.Storage.allAccounts.removeIf { it.name == name && it.id == account.id }
                         println("Ваш счет был успешно удален! Удачного вам дня!")
                         return
                     }
@@ -102,13 +98,13 @@ object Interactor {
             if (ans.lowercase() == "y") println("Мы не нашли другой счет у вас, выведем всю сумму ${account.amount} наличными")
             println("Введите номер отделения или банкомата, в котором вам удобно забрать наличные (или 0, если хотите забрать в главном отделении банка)")
             var cash = readln().toInt()
-            if (Bank.getCashpointById(cash) == null) cash = Bank.allCashpoints[0].id
-            Bank.addCashTransaction(account.id, cash, account.amount)
-            val trans = Bank.allTransactions.last()
+            if (Bank.Getter.getCashpointById(cash) == null) cash = Bank.Storage.allCashpoints[0].id
+            Bank.Adder.addCashTransaction(account.id, cash, account.amount)
+            val trans = Bank.Storage.allTransactions.last()
             if (trans.status == Status.Completed) {
                 println("Деньги (${trans.amount} ${account.currency}) вам выданы, сейчас закроем счет!")
-                Bank.deleteCard(account.name, id) // Удаляем привязанную к счету карту
-                Bank.allAccounts.removeIf { it.name == name && it.ownerId == id }
+                Bank.Deleter.deleteCard(account.name, account.id) // Удаляем привязанную к счету карту
+                Bank.Storage.allAccounts.removeIf { it.name == name && it.ownerId == account.id }
                 println("Ваш счет был успешно удален! Удачного вам дня!")
             }
         }
@@ -124,19 +120,16 @@ object Interactor {
             val limit = readln().toBigDecimal()
             println("Введите название вашего счета")
             val name = readln()
-            println("Введите ваш ИНН или паспорт")
-            val res = readln()
-            val id = Bank.getClientByTIN(res)?.id ?: Bank.getClientByPassport(res)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
-            val i = Bank.allAccounts.indexOf(account)
+            val account = getAccountByNameAndOwner(name)
+            val i = Bank.Storage.allAccounts.indexOf(account)
             if (!isCard) {
-                Bank.allAccounts[i].limit = limit
-                println("Теперь лимит по счету равен ${Bank.allAccounts[i].limit} ${account.currency}")
+                Bank.Storage.allAccounts[i].limit = limit
+                println("Теперь лимит по счету равен ${Bank.Storage.allAccounts[i].limit} ${account.currency}")
             } else {
-                val card = Bank.getCardByAccountId(account.id)!!
-                val j = Bank.allCards.indexOf(card)
-                Bank.allCards[j].limit = limit
-                println("Теперь лимит по карте равен ${Bank.allCards[j].limit} ${account.currency}")
+                val card = Bank.Getter.getCardByAccountId(account.id)!!
+                val j = Bank.Storage.allCards.indexOf(card)
+                Bank.Storage.allCards[j].limit = limit
+                println("Теперь лимит по карте равен ${Bank.Storage.allCards[j].limit} ${account.currency}")
             }
         }
         catch (e: Exception) {
@@ -147,18 +140,15 @@ object Interactor {
         try {
             println("Введите название счета, для которого вы хотите открыть карту")
             val name = readln()
-            println("Введите ваш паспорт или ИНН")
-            val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
-            if (Bank.getCardByAccountId(account.id) != null) {
+            val account = getAccountByNameAndOwner(name)
+            if (Bank.Getter.getCardByAccountId(account.id) != null) {
                 println("К вашему счету уже привязана карта! Сначала закройте старую")
                 return
             }
             println("Введите, какую платежную систему будет использовать ваша карта (HoMir, MasterBart, Lisa)")
             val financialService = Service.valueOf(readln())
-            Bank.addCard(account.id, financialService)
-            println("К вашему счету успешно была привязана карта\n${Bank.allCards.last()}")
+            Bank.Adder.addCard(account.id, financialService)
+            println("К вашему счету успешно была привязана карта\n${Bank.Storage.allCards.last()}")
         }
         catch(e: Exception) {
             println("Не получилось открыть карту")
@@ -168,10 +158,8 @@ object Interactor {
         try {
             println("Введите название счета, для которого вы хотите закрыть карту")
             val name = readln()
-            println("Введите ваш паспорт или ИНН")
-            val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            if (Bank.deleteCard(name, id)) println("Карта успешно удалена!")
+            val account = getAccountByNameAndOwner(name)
+            if (Bank.Deleter.deleteCard(name, account.id)) println("Карта успешно удалена!")
         }
         catch (e: Exception) {
             println("Не удалось закрыть карту")
@@ -185,13 +173,13 @@ object Interactor {
             val nameTo = readln()
             println("Введите ваш паспорт или ИНН")
             val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            val idFrom = Bank.getAccountByNameAndOwnerId(nameFrom, id)!!.id
-            val idTo = Bank.getAccountByNameAndOwnerId(nameTo, id)!!.id
-            val card = Bank.getCardByAccountId(idFrom)!!
-            if (!Bank.deleteCard(nameFrom, id)) throw Exception()
+            val id = Bank.Getter.getClientByTIN(s)?.id ?: Bank.Getter.getClientByPassport(s)!!.id
+            val idFrom = Bank.Getter.getAccountByNameAndOwnerId(nameFrom, id)!!.id
+            val idTo = Bank.Getter.getAccountByNameAndOwnerId(nameTo, id)!!.id
+            val card = Bank.Getter.getCardByAccountId(idFrom)!!
+            if (!Bank.Deleter.deleteCard(nameFrom, id)) throw Exception()
             println("Карта успешно отвязана от счета $idFrom")
-            Bank.addCard(idTo, card.financialService)
+            Bank.Adder.addCard(idTo, card.financialService)
             println("Карта успешно привязана к счету $idTo")
         }
         catch (e: Exception) {
@@ -202,23 +190,20 @@ object Interactor {
         try {
             println("Введите название счета, с которого вы хотите перевести деньги")
             val name = readln()
-            println("Введите ваш паспорт или ИНН")
-            val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            val account = getAccountByNameAndOwner(name)
             println("Введите номер телефона человека, которому хотите перевести деньги (начиная с 8 без скобок и дефисов)")
             val number = readln()
-            val accountTo = Bank.allAccounts.find {
+            val accountTo = Bank.Storage.allAccounts.find {
                 val a = (it.currency == account.currency)
-                val b = (if (it.isPersonalAccount) Bank.getPersonalClientById(it.ownerId)!! else
-                Bank.getLegalClientById(it.ownerId)!!).phoneNumber == number
+                val b = (if (it.isPersonalAccount) Bank.Getter.getPersonalClientById(it.ownerId)!! else
+                Bank.Getter.getLegalClientById(it.ownerId)!!).phoneNumber == number
                 val c = (it.id != account.id)
                 a && b && c
             }!!
             println("Введите, сколько ${account.currency} хотите перевести (ваш лимит ${account.limit}, а на счету лежит ${account.amount})")
             val amount = readln().toBigDecimal()
-            Bank.addTransaction(account.id, accountTo.id, amount)
-            if (Bank.allTransactions.last().status == Status.Completed)
+            Bank.Adder.addTransaction(account.id, accountTo.id, amount)
+            if (Bank.Storage.allTransactions.last().status == Status.Completed)
                 println("Транзакция прошла успешно, $amount ${account.currency} переведены\nТеперь на вашем счету ${account.amount} ${account.currency}")
             else
                 println("Транзакция не прошла, извините :(")
@@ -231,17 +216,14 @@ object Interactor {
         try {
             println("Введите название счета, с которого хотите снять деньги")
             val name = readln()
-            println("Введите ваш паспорт или ИНН")
-            val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            val account = getAccountByNameAndOwner(name)
             println("Введите в каком банкомате или отделении банка хотите снять деньги (если не знаете его номер, то введит 0, мы выдадим деньги в главном отделении)")
             var cashierId = readln().toInt()
-            if (Bank.getCashpointById(cashierId) == null) cashierId = Bank.allCashpoints[0].id
+            if (Bank.Getter.getCashpointById(cashierId) == null) cashierId = Bank.Storage.allCashpoints[0].id
             println("Введите сколько денег хотите вывести (у вас лимит ${account.limit}, а всего ${account.amount} ${account.currency})")
             val amount = readln().toBigDecimal()
-            Bank.addCashTransaction(account.id, cashierId, amount)
-            if (Bank.allTransactions.last().status == Status.Completed)
+            Bank.Adder.addCashTransaction(account.id, cashierId, amount)
+            if (Bank.Storage.allTransactions.last().status == Status.Completed)
                 println("Выдача $amount ${account.currency} прошла успешно! Теперь у вас на счете ${account.amount} ${account.currency}")
             else
                 println("Не получилось выдать наличные, извините :(")
@@ -254,17 +236,14 @@ object Interactor {
         try {
             println("Введите название счета, на который хотите положить деньги")
             val name = readln()
-            println("Введите ваш паспорт или ИНН")
-            val s = readln()
-            val id = Bank.getClientByTIN(s)?.id ?: Bank.getClientByPassport(s)!!.id
-            val account = Bank.getAccountByNameAndOwnerId(name, id)!!
+            val account = getAccountByNameAndOwner(name)
             println("Введите в каком банкомате или отделении банка хотите положить деньги (если не знаете его номер, то введит 0, мы направим вас в главное отделение)")
             var cashierId = readln().toInt()
-            if (Bank.getCashpointById(cashierId) == null) cashierId = Bank.allCashpoints[0].id
+            if (Bank.Getter.getCashpointById(cashierId) == null) cashierId = Bank.Storage.allCashpoints[0].id
             println("Введите сколько денег хотите положить на ваш счет (сейчас на нем ${account.amount} ${account.currency})")
             val amount = readln().toBigDecimal()
-            Bank.addCashTransaction(cashierId, account.id, amount)
-            if (Bank.allTransactions.last().status == Status.Completed)
+            Bank.Adder.addCashTransaction(cashierId, account.id, amount)
+            if (Bank.Storage.allTransactions.last().status == Status.Completed)
                 println("Вы успешно положили себе на счет $amount ${account.currency}! Теперь у вас на счете ${account.amount} ${account.currency}")
             else
                 println("Не получилось положить наличные, извините :(")
@@ -275,30 +254,37 @@ object Interactor {
     }
     fun printAllClients() {
         println("Список всех клиентов:")
-        for (client in Bank.allPersonalClients)
+        for (client in Bank.Storage.allPersonalClients)
             println("${client.id}: $client")
         println("------------")
-        for (client in Bank.allLegalClients)
+        for (client in Bank.Storage.allLegalClients)
             println("${client.id}: $client")
     }
     fun printAllAccount() {
         println("Список всех счетов:")
-        for (account in Bank.allAccounts)
+        for (account in Bank.Storage.allAccounts)
             println("${account.id}: $account")
     }
     fun printAllCards() {
         println("Список всех карт:")
-        for (card in Bank.allCards)
+        for (card in Bank.Storage.allCards)
             println("${card.id}: $card")
     }
     fun printAllCashpoints() {
         println("Список всех банкоматов и отделений")
-        for (cashpoint in Bank.allCashpoints)
+        for (cashpoint in Bank.Storage.allCashpoints)
             println(cashpoint)
     }
     fun printAllTransactions() {
         println("Список всех транзакций")
-        for (trans in Bank.allTransactions)
+        for (trans in Bank.Storage.allTransactions)
             println(trans)
+    }
+
+    private fun getAccountByNameAndOwner(name: String): BankAccount {
+        println("Введите ваш паспорт или ИНН, чтобы подтвердить владение счетом")
+        val s = readln()
+        val id = Bank.Getter.getClientByTIN(s)?.id ?: Bank.Getter.getClientByPassport(s)!!.id
+        return Bank.Getter.getAccountByNameAndOwnerId(name, id)!!
     }
 }
