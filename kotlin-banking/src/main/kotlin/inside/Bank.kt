@@ -1,11 +1,5 @@
 package inside
-import BankAccount
-import Card
-import ClientPerson
-import Currency
-import Service
-import SexEnum
-import Transaction
+
 import java.math.BigDecimal
 import java.util.*
 

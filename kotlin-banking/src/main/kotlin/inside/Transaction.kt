@@ -1,15 +1,17 @@
-import inside.Bank
+package inside
+
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.*
 
 enum class Status { ToProcess, InProcess, Completed, Rejected }
 
-class Transaction(val idFrom: Int, val idTo: Int, val amount: BigDecimal, val date_: Calendar, val isCashTransaction: Boolean = false) {
-    var status = Status.ToProcess
-    val date get() = SimpleDateFormat("h:m:s d/M/Y").format(date_.time)
-    var currency: Currency = Currency.RUB
+class Transaction(private val idFrom: Int, private val idTo: Int, internal val amount: BigDecimal, private val date_: Calendar, private val isCashTransaction: Boolean = false) {
+    internal var status = Status.ToProcess
+    private val date get() = SimpleDateFormat("h:m:s d/M/Y").format(date_.time)
+    private var currency: Currency = Currency.RUB
     override fun toString() = "Транзакция $idFrom --> $idTo в размере $amount $currency, ее статус $status, время проведения $date"
+
     init {
         status = Status.InProcess
         if (amount.toDouble() <= 0) {

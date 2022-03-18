@@ -1,5 +1,5 @@
 package inside
 
-open class Client (val phoneNumber: String, val address: String) {
-    val id = this.hashCode()
+open class Client (internal val phoneNumber: String, internal val address: String) {
+    internal val id = this.hashCode()
 }
