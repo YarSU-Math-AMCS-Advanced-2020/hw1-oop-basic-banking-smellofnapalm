@@ -82,6 +82,7 @@ object Bank {
                 val newToId = getCardById(toId)?.accountId
                 if (newFromId == null || newToId == null) return
                 if (getAccountById(newFromId) == null || getAccountById(newToId) == null) return
+                if (currentDate.after(getCardById(fromId)!!.endingDate) || currentDate.after(getCardById(toId)!!.endingDate)) return
                 val newTransaction = Transaction(newFromId, newToId, amount, currentDate)
                 if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
             }

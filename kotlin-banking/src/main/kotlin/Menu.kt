@@ -11,6 +11,7 @@ object Menu {
         "Закрыть карту",
         "Привязать карту к другому счету",
         "Совершить перевод (по номеру телефона)",
+        "Совершить перевод (по номеру карты)",
         "Снять деньги",
         "Положить деньги",
         "Вывести список всех клиентов",
@@ -30,13 +31,14 @@ object Menu {
             7 -> Interactor.closeCard()
             8 -> Interactor.rebindCard()
             9 -> Interactor.makeTransaction()
-            10 -> Interactor.cashWithdrawal()
-            11 -> Interactor.cashIn()
-            12 -> Interactor.printAllClients()
-            13 -> Interactor.printAllAccount()
-            14 -> Interactor.printAllCards()
-            15 -> Interactor.printAllCashpoints()
-            16 -> Interactor.printAllTransactions()
+            10 -> Interactor.makeTransactionWithCard()
+            11 -> Interactor.cashWithdrawal()
+            12 -> Interactor.cashIn()
+            13 -> Interactor.printAllClients()
+            14 -> Interactor.printAllAccount()
+            15 -> Interactor.printAllCards()
+            16 -> Interactor.printAllCashpoints()
+            17 -> Interactor.printAllTransactions()
         }
     }
     private fun printMenu() {

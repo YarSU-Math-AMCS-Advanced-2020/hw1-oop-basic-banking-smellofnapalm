@@ -14,7 +14,7 @@ class Transaction(private val idFrom: Int, private val idTo: Int, internal val a
 
     init {
         status = Status.InProcess
-        if (amount.toDouble() <= 0) {
+        if (amount.toDouble() < 0) {
             status = Status.Rejected
         }
         else if (isCashTransaction) {

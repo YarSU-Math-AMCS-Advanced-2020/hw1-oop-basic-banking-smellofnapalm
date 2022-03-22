@@ -1,5 +1,8 @@
 package inside
 
+import inside.Bank.Adder.addTransaction
+import inside.Bank.Getter.getAccountById
+import inside.Bank.Getter.getCardById
 import java.math.BigDecimal
 import java.util.*
 
@@ -78,6 +81,7 @@ object Interactor {
             println("Введите название счета, которой вы хотите закрыть")
             val name = readln()
             val account = getAccountByNameAndOwner(name)
+            if (account.limit < account.amount) account.limit = account.amount
             println("Вы хотите перевести деньги на другой ваш счет? (Y/N)")
             val ans = readln()
             if (ans.lowercase() == "y") {
@@ -210,6 +214,29 @@ object Interactor {
         }
         catch(e: Exception) {
             println("Не удалось создать и провести транзакцию")
+        }
+    }
+    fun makeTransactionWithCard() {
+        try {
+            println("Введите номер карты, с которой хотите списать деньги")
+            val card = getCardById(readln().toInt())!!
+            println("Введите ИНН или паспорт, чтобы подтвердить владение картой")
+            val passOrTin = readln()
+            val ownerId = Bank.Getter.getClientByPassport(passOrTin)?.id ?: Bank.Getter.getClientByTIN(passOrTin)!!.id
+            if (ownerId != getAccountById(card.accountId)!!.ownerId) throw Exception()
+            println("Введите номер карты, на которую хотите перевести")
+            val cardTo = getCardById(readln().toInt())!!
+            println("Введите сумму, которую хотите перевести")
+            val amount = readln().toBigDecimal()
+            addTransaction(card.id, cardTo.id, amount, true)
+            if (Bank.Storage.allTransactions.last().status == Status.Completed) {
+                println("Деньги ($amount ${getAccountById(card.accountId)!!.currency}) были успешно переведены на другую карту!")
+                println("Теперь на вашей карте ${getAccountById(card.accountId)!!.amount} ${getAccountById(card.accountId)!!.currency}")
+            }
+            else println("Не удалось выполнить перевод средств")
+        }
+        catch (e: Exception) {
+            println("Перевод с карты на карту не удался")
         }
     }
     fun cashWithdrawal() {
