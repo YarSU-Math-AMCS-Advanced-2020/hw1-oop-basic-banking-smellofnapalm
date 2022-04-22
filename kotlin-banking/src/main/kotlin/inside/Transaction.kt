@@ -14,40 +14,8 @@ class Transaction(private val idFrom: Int, private val idTo: Int, internal val a
 
     init {
         status = Status.InProcess
-        if (amount.toDouble() < 0) {
-            status = Status.Rejected
-        }
-        else if (isCashTransaction) {
-            // Снятие наличных (т.е. деньги снимаются со счета человека и поступают на фиктивный счет банкомата)
-            if (Bank.Getter.getAccountById(idFrom) != null && Bank.Getter.getCashpointById(idTo) != null) {
-                val from = Bank.Getter.getAccountById(idFrom)!!
-                val indexFrom = Bank.Storage.allAccounts.indexOf(from)
-                currency = Currency.valueOf(from.currency)
-
-                if (amount > from.limit) {
-                    status = Status.Rejected
-                }
-                else if (amount > from.amount) {
-                    status = Status.Rejected
-                }
-                else {
-                    Bank.Storage.allAccounts[indexFrom].amount -= amount
-                    status = Status.Completed
-                }
-            }
-            // Внесение наличных (т.е. от фиктивного счета банкомата на счет человека)
-            else if (Bank.Getter.getCashpointById(idFrom) != null && Bank.Getter.getAccountById(idTo) != null) {
-                val to = Bank.Getter.getAccountById(idTo)!!
-                val indexTo = Bank.Storage.allAccounts.indexOf(to)
-                currency = Currency.valueOf(to.currency)
-
-                Bank.Storage.allAccounts[indexTo].amount += amount
-                status = Status.Completed
-            }
-            else {
-                status = Status.Rejected
-            }
-        }
+        if (amount.toDouble() < 0) status = Status.Rejected
+        else if (isCashTransaction) makeCashTransaction(idFrom, idTo, amount)
         // Перевод между двумя счетами
         else {
             var from: Int = -1
@@ -70,6 +38,36 @@ class Transaction(private val idFrom: Int, private val idTo: Int, internal val a
                 status = Status.Completed
             }
         }
+    }
+
+    private fun makeCashTransaction(idFrom: Int, idTo: Int, amount: BigDecimal) {
+        // Снятие наличных (т.е. деньги снимаются со счета человека и поступают на фиктивный счет банкомата)
+        if (Bank.Getter.getAccountById(idFrom) != null && Bank.Getter.getCashpointById(idTo) != null) {
+            val from = Bank.Getter.getAccountById(idFrom)!!
+            val indexFrom = Bank.Storage.allAccounts.indexOf(from)
+            currency = Currency.valueOf(from.currency)
+
+            if (amount > from.limit) {
+                status = Status.Rejected
+            }
+            else if (amount > from.amount) {
+                status = Status.Rejected
+            }
+            else {
+                Bank.Storage.allAccounts[indexFrom].amount -= amount
+                status = Status.Completed
+            }
+        }
+        // Внесение наличных (т.е. от фиктивного счета банкомата на счет человека)
+        else if (Bank.Getter.getCashpointById(idFrom) != null && Bank.Getter.getAccountById(idTo) != null) {
+            val to = Bank.Getter.getAccountById(idTo)!!
+            val indexTo = Bank.Storage.allAccounts.indexOf(to)
+            currency = Currency.valueOf(to.currency)
+
+            Bank.Storage.allAccounts[indexTo].amount += amount
+            status = Status.Completed
+        }
+        else status = Status.Rejected
     }
 
 }

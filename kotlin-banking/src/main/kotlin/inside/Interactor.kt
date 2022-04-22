@@ -88,7 +88,7 @@ object Interactor {
                 val anotherAccount = Bank.Storage.allAccounts.find { it.name != name && it.ownerId == account.id && it.currency == account.currency}
                 if (anotherAccount != null) {
                     println("Сейчас переведем средства (${account.amount} ${account.currency}) на ваш счет ${anotherAccount.name}")
-                    Bank.Adder.addTransaction(account.id, anotherAccount.id, account.amount)
+                    addTransaction(account.id, anotherAccount.id, account.amount)
                     val trans = Bank.Storage.allTransactions.last()
                     if (trans.status == Status.Completed) {
                         println("Деньги были успешно переведены!")
@@ -192,7 +192,7 @@ object Interactor {
     }
     fun makeTransaction() {
         try {
-            println("Введите название счета, с которого вы хотите перевести деньги")
+            println("Введите название счета (или номер карты), с которого вы хотите перевести деньги")
             val name = readln()
             val account = getAccountByNameAndOwner(name)
             println("Введите номер телефона человека, которому хотите перевести деньги (начиная с 8 без скобок и дефисов)")
@@ -206,7 +206,7 @@ object Interactor {
             }!!
             println("Введите, сколько ${account.currency} хотите перевести (ваш лимит ${account.limit}, а на счету лежит ${account.amount})")
             val amount = readln().toBigDecimal()
-            Bank.Adder.addTransaction(account.id, accountTo.id, amount)
+            addTransaction(account.id, accountTo.id, amount)
             if (Bank.Storage.allTransactions.last().status == Status.Completed)
                 println("Транзакция прошла успешно, $amount ${account.currency} переведены\nТеперь на вашем счету ${account.amount} ${account.currency}")
             else
@@ -228,7 +228,7 @@ object Interactor {
             val cardTo = getCardById(readln().toInt())!!
             println("Введите сумму, которую хотите перевести")
             val amount = readln().toBigDecimal()
-            addTransaction(card.id, cardTo.id, amount, true)
+            addTransaction(card.id, cardTo.id, amount)
             if (Bank.Storage.allTransactions.last().status == Status.Completed) {
                 println("Деньги ($amount ${getAccountById(card.accountId)!!.currency}) были успешно переведены на другую карту!")
                 println("Теперь на вашей карте ${getAccountById(card.accountId)!!.amount} ${getAccountById(card.accountId)!!.currency}")
@@ -241,7 +241,7 @@ object Interactor {
     }
     fun cashWithdrawal() {
         try {
-            println("Введите название счета, с которого хотите снять деньги")
+            println("Введите название счета (или номер карты), с которого хотите снять деньги")
             val name = readln()
             val account = getAccountByNameAndOwner(name)
             println("Введите в каком банкомате или отделении банка хотите снять деньги (если не знаете его номер, то введит 0, мы выдадим деньги в главном отделении)")
@@ -261,7 +261,7 @@ object Interactor {
     }
     fun cashIn() {
         try {
-            println("Введите название счета, на который хотите положить деньги")
+            println("Введите название счета (или номер карты), на который хотите положить деньги")
             val name = readln()
             val account = getAccountByNameAndOwner(name)
             println("Введите в каком банкомате или отделении банка хотите положить деньги (если не знаете его номер, то введит 0, мы направим вас в главное отделение)")
@@ -309,9 +309,14 @@ object Interactor {
     }
 
     private fun getAccountByNameAndOwner(name: String): BankAccount {
-        println("Введите ваш паспорт или ИНН, чтобы подтвердить владение счетом")
+        println("Введите ваш паспорт или ИНН, чтобы подтвердить владение счетом/картом")
         val s = readln()
         val id = Bank.Getter.getClientByTIN(s)?.id ?: Bank.Getter.getClientByPassport(s)!!.id
+        if (name[0].isDigit()) {
+            // Если в переменной name - номер карты
+            val newName = getAccountById(getCardById(name.toInt())!!.accountId)!!.name
+            return Bank.Getter.getAccountByNameAndOwnerId(newName, id)!!
+        }
         return Bank.Getter.getAccountByNameAndOwnerId(name, id)!!
     }
 }

@@ -75,19 +75,12 @@ object Bank {
             }
         }
 
-        fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
+        fun addTransaction(fromId: Int, toId: Int, amount: BigDecimal) {
             val currentDate = GregorianCalendar()
-            if (isCardId) {
-                val newFromId = getCardById(fromId)?.accountId
-                val newToId = getCardById(toId)?.accountId
-                if (newFromId == null || newToId == null) return
-                if (getAccountById(newFromId) == null || getAccountById(newToId) == null) return
-                if (currentDate.after(getCardById(fromId)!!.endingDate) || currentDate.after(getCardById(toId)!!.endingDate)) return
-                val newTransaction = Transaction(newFromId, newToId, amount, currentDate)
-                if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
-            }
-            if (getAccountById(fromId) == null || getAccountById(toId) == null) return
-            val newTransaction = Transaction(fromId, toId, amount, currentDate)
+            val newFromId = getCardById(fromId)?.accountId ?: fromId
+            val newToId = getCardById(toId)?.accountId ?: toId
+            if (getAccountById(newFromId) == null || getAccountById(newToId) == null) return
+            val newTransaction = Transaction(newFromId, newToId, amount, currentDate)
             if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
         }
 
@@ -96,29 +89,13 @@ object Bank {
             if (newCashpoint !in allCashpoints) allCashpoints.add(newCashpoint)
         }
 
-        fun addCashTransaction(fromId: Int, toId: Int, amount: BigDecimal, isCardId: Boolean = false) {
+        fun addCashTransaction(fromId: Int, toId: Int, amount: BigDecimal) {
             val currentDate = GregorianCalendar()
-            if (isCardId) {
-                val newFromId = getCardById(fromId)?.accountId
-                val newToId = getCardById(toId)?.accountId
-                if (newFromId != null) {
-                    if (getAccountById(newFromId) != null) {
-                        val newTransaction = Transaction(newFromId, toId, amount, currentDate, true)
-                        if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
-                    }
-                    return
-                } else if (newToId != null) {
-                    if (getAccountById(newToId) != null) {
-                        val newTransaction = Transaction(fromId, newToId, amount, currentDate, true)
-                        if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
-                    }
-                }
-            }
-            if ((getAccountById(fromId) != null && getCashpointById(toId) != null) || (getCashpointById(fromId) != null && getAccountById(
-                    toId
-                ) != null)
-            ) {
-                val newTransaction = Transaction(fromId, toId, amount, currentDate, true)
+            val newFromId = getCardById(fromId)?.accountId ?: fromId
+            val newToId = getCardById(toId)?.accountId ?: toId
+            if ((getAccountById(newFromId) != null && getCashpointById(newToId) != null)
+                || (getCashpointById(newFromId) != null && getAccountById(newToId) != null)) {
+                val newTransaction = Transaction(newFromId, newToId, amount, currentDate, true)
                 if (newTransaction !in allTransactions) allTransactions.add(newTransaction)
             }
         }
@@ -136,6 +113,13 @@ object Bank {
             allAccounts.find { account -> account.name == name && account.ownerId == id }
 
         fun getCardByAccountId(id: Int) = allCards.find { card -> card.accountId == id }
+
+        fun checkCardValidity(cardId: Int): Boolean {
+            val currentDate = GregorianCalendar()
+            val card = getCardById(cardId)!!
+            if (card._endingDate.after(currentDate)) return !Deleter.deleteCard(cardId)
+            return true
+        }
     }
 
     object Deleter {
@@ -143,6 +127,11 @@ object Bank {
             val accountId = getAccountByNameAndOwnerId(accountName, ownerId)?.id ?: return false
             if (allCards.find { it.accountId == accountId } == null) return false
             allCards.removeIf { it.accountId == accountId }
+            return true
+        }
+        fun deleteCard(cardId: Int): Boolean {
+            if (getCardById(cardId) == null) return false
+            allCards.removeIf { it.id == cardId }
             return true
         }
     }
